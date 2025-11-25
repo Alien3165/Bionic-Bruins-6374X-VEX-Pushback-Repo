@@ -1,5 +1,8 @@
 #include "main.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
+#include "auton.h"
+#include "pros/misc.h"
+#include <cmath>
 /**
  * A callback function for LLEMU's center button.
  *
@@ -142,43 +145,99 @@ void competition_initialize() {}
  * from where it left off.
  */
 
- 
-void autonomous() {
+void fourBallLeft()
+{
+	// Set initial robot pose
+chassis.setPose(0, 0, 0);
 
-	
-    chassis.setPose(0, 0, 0);
-	//Starts Intake Bottom
-	intakeBottom.move(127);
+// Start bottom intake
+intakeBottom.move(127);
 
-	//Moves to the 3 balls
-	chassis.moveToPoint(-5, 35,2500,{.maxSpeed = 50});
+// --- Collect the 3 balls ---
+chassis.moveToPoint(-5, 35, 2500, { .maxSpeed = 50 });
+pros::delay(1000);
 
-	//Moves to the long goal
-	chassis.turnToPoint(-35,10,1000);
-	chassis.moveToPoint(-35, 10, 2000);
-	//Turns to face the matchload
-	chassis.turnToHeading(-180, 1000);
-	//Moves to the goal
-	chassis.moveToPoint(-35, 30, 1500, {.forwards = false});
+// Deploy little will
+lW.set_value(true);
+
+// Slight adjustment to pick up final ball
+chassis.moveToPoint(-7, 40, 1000, { .maxSpeed = 50 });
+
+// --- Drive to the long goal ---
+chassis.turnToPoint(-37, 10, 1000);
+lW.set_value(false);
+
+chassis.moveToPoint(-37, 10, 2000, { .maxSpeed = 60 });
+
+// --- Rotate toward matchload zone ---
+chassis.turnToHeading(-180, 1000);
+
+// Back into the matchload
+chassis.moveToPoint(-35, 33, 2000, { .forwards = false });
+pros::delay(500);
+// Run top intake to score
+intakeTop.move(127);
+
+
+}
+
+void sevenBallLeft()
+{
+	fourBallLeft();
+	pros::delay(2000);
+	lW.set_value(true);
+	intakeTop.brake();
+	chassis.moveToPoint(-35, -7, 3000,{.maxSpeed = 80});
+	pros::delay(1000);
+	chassis.moveToPoint(-36, 35, 3000, {.forwards = false, .maxSpeed = 75});
 	pros::delay(500);
-
-	// chassis.moveToPose(-35,10,-180,3000,{.maxSpeed = 60});
-	//Intake moves forward
 	intakeTop.move(127);
-	// pros::delay(1000);
-	// lW.set_value(true);
-	// intakeTop.brake();
-	// pros::delay(500);
-	// chassis.moveToPoint(-35, -5, 3000);
-	// pros::delay(1000);
-	// chassis.moveToPoint(-36, 32, 3000, {.forwards = false});
-	// intakeTop.move(127);
-	// pros::delay(1000);
-	// intakeTop.brake();
-	// pros::delay(500);
-	// intakeTop.move(127);
+
 	
-	//chassis.turnToPoint(-35, 0, 4000, {.forwards = false});
+	
+}
+
+void longMiddleLeft()
+{
+		// Set initial robot pose
+		chassis.setPose(0, 0, 0);
+
+		// Start bottom intake
+		intakeBottom.move(127);
+
+		// --- Collect the 3 balls ---
+		chassis.moveToPoint(-5, 35, 2500, { .maxSpeed = 50 });
+		pros::delay(1000);
+
+		//Score on Middle Goal
+		chassis.turnToPoint(5, 53, 1000,{.forwards = false});
+		chassis.moveToPoint(5, 53, 1500, {.forwards=false, .maxSpeed = 50 });
+		pros::delay(1000);
+		intakeTop.move(80);
+		pros::delay(300);
+		intakeTop.brake();
+
+		// --- Drive to the long goal ---
+		chassis.moveToPoint(-37, 10, 2000, { .maxSpeed = 60 });
+
+		// --- Rotate toward matchload zone ---
+		chassis.turnToHeading(-180, 1000);
+
+		// Back into the matchload
+		chassis.moveToPoint(-35, 33, 2000, { .forwards = false });
+		pros::delay(500);
+		// Run top intake to score
+		intakeTop.move(127);
+
+		//sevenBallLeft();
+		
+
+}
+ 
+void autonomous() 
+{
+	longMiddleLeft();    
+	
 
 	
 
@@ -223,7 +282,7 @@ void opcontrol() {
 		}
 		else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
 			intakeBottom.move(-127);
-		} else if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+		} else if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
 			lW.set_value(state);
 			state = !state;
 		} else if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
