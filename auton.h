@@ -8,6 +8,7 @@
 void fourBallLeft();
 void sevenBallLeft();
 void longMiddleLeft();
+void nineBallLeft();
 
 void soloAWP();
 
@@ -15,5 +16,6 @@ void soloAWP();
 // Optional: split versions if you plan on left/right routines
 void fourBallRight();
 void sevenBallRight();
-void longMiddleRight();
+void longBottomRight();
+void nineBallRight();
 
