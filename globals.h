@@ -21,6 +21,7 @@ extern pros::Motor intakeTop;
 // ----------------------
 extern pros::adi::DigitalOut lW;  // little will
 extern pros::adi::DigitalOut lB;  // little blocker / doinker
+extern pros::adi::DigitalOut MD;  // little blocker / doinker
 
 // ----------------------
 // Sensors
