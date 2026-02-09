@@ -1,9 +1,12 @@
 #include "main.h"
+#include "distance.h"
 #include "globals.h"
 #include "lemlib/api.hpp" // IWYU pragma: keep
 #include "auton.h"
 #include "pros/misc.h"
 #include <cmath>
+
+Distancee distancee;
 /**
  * A callback function for LLEMU's center button.
  *
@@ -73,10 +76,20 @@ void competition_initialize() {}
 
 void autonomous() 
 {
-	soloAWP();    
-	
 
-	
+//
+
+    lB.set_value(true);
+    pros::delay(25);
+	//chassis.moveToPoint(0, 10, 5000);
+    //soloAWP();
+    //fourBallLeft();//Works
+    //fourBallRight();//Need to Check
+    sevenBallLeft(); //Descore and scoring not working
+    //sevenBallRight();//Works but descore needs tuning
+
+  //  skills(distancee);
+    //soloUpdatedAWP();   //Last long goal needs to scores
 
 	
 }
@@ -104,59 +117,48 @@ void opcontrol() {
 // State variables for toggling mechanisms
 bool state = true;      // Tracks Little Will (lW) toggle state
 bool stateTwo = true;   // Reserved for future use (currently unused)
+bool statethree = true; // Tracks Mobile Goal (MD) toggle state
 
 while (true) {
-    // -------------------------------
-    // Controller Inputs
-    // -------------------------------
+        int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+        int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-    // Get joystick positions
-    int leftY = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);  // forward/backward
-    int rightX = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X); // turning
+        // move the robot
+        chassis.curvature(leftY, rightX);
 
-    // Drive robot using curvature drive
-    chassis.curvature(leftY, rightX);
 
-    // -------------------------------
-    // Intake Control
-    // -------------------------------
-    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
-        // Only bottom intake runs forward
-        intakeBottom.move(127);
-    } 
-    else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
-        // Both intakes run forward
-        intakeBottom.move(127);
-        intakeTop.move(127);
+        if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) { 
+            intakeBottom.move(127);
+        } 
+        else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+            intakeBottom.move(127);
+            intakeTop.move(127);
+        }
+        else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+            intakeBottom.move(-127);
+            intakeTop.move(-127);
+        } else if(controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
+            intakeBottom.move(85);
+        } else if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+
+            lW.set_value(state);
+            state = !state;
+        } else if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y)) {
+            lB.set_value(stateTwo);
+            stateTwo = !stateTwo;
+        }
+        else if(controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)){
+            MD.set_value(statethree);
+            statethree = !statethree;
+
+        }else {
+            intakeBottom.move(0);
+            intakeTop.move(0);
+        }
+
+        // delay to save resources
+        pros::delay(25);
     }
-    else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
-        // Bottom intake runs in reverse
-        intakeBottom.move(-127);
-    } 
-    // -------------------------------
-    // Pneumatics Control
-    // -------------------------------
-    else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
-        // Toggle Little Will (lW) on/off
-        lW.set_value(state);
-        state = !state;
-    } 
-    else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
-        // Activate Descore mechanism (lB) while button is held
-        lB.set_value(stateTwo);
-        stateTwo = !stateTwo; // Currently not used
-    } 
-    else {
-        // Stop intakes and deactivate Descore
-        intakeBottom.move(0);
-        intakeTop.move(0);
-    }
-
-    // -------------------------------
-    // Delay to reduce CPU usage
-    // -------------------------------
-    pros::delay(25);
 }
 
     
-}
