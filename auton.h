@@ -52,3 +52,6 @@ void longBottomRightSeven();
 
 // Executes a nine-ball routine targeting the bottom or long goal on the right.
 void longBottomRightNine();
+
+void soloUpdatedAWP();
+void skills();
